@@ -15,9 +15,9 @@ Controls 26 LEDs to light up letters in order
 
   * f controls of**f**-time (in multiples of 200ms)
 
-  * g controls **g** ap-time (in multiples of 1000ms)
+  * g controls **g**ap-time (in multiples of 1000ms)
 
-  * m controls the **m** ode (1-4)
+  * m controls the **m**ode (1-4)
 
 
 
