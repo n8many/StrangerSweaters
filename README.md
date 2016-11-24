@@ -24,3 +24,5 @@ Stranger Things Light Wall Halloween Costume (In sweater form)
 * Power for LEDS is drawn directly from USB
 
 * LED signal pin is 12 (connected through Logic Level Converter)
+
+* LEDs are connected in reverse alphabetical order (where Z is connected first to the Arduino)
