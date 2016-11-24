@@ -27,15 +27,15 @@ char phrase[80];
 //Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUM_LEDS, PIN, NEO_RGB + NEO_KHZ800);
 
 WS2812 pixels(NUM_LEDS);
-cRGB yellow; 
-cRGB blue; 
-cRGB purple; 
-cRGB green; 
-cRGB orange; 
-cRGB pink; 
-cRGB red; 
-cRGB off; 
-cRGB colors[NUM_LEDS]; 
+cRGB yellow;
+cRGB blue;
+cRGB purple;
+cRGB green;
+cRGB orange;
+cRGB pink;
+cRGB red;
+cRGB off;
+cRGB colors[NUM_LEDS];
 
 
 
@@ -55,7 +55,7 @@ void setup() {
   pinMode(A2, INPUT_PULLUP);
   pinMode(A3, INPUT_PULLUP);
   pinMode(A4, INPUT_PULLUP);
-  
+
 
   if ( ble.isVersionAtLeast(MINIMUM_FIRMWARE_VERSION) )
   {
@@ -85,13 +85,13 @@ void setup() {
   digitalWrite(13, LOW);
 
   //Serial.println("test");
-  
+
 }
 
 void loop() {
   /*char text[80];
   for (int i=0; i <80; i++){
-    
+
   }*/
   if (! ble.isConnected()) {
       //delay(500);
@@ -149,12 +149,12 @@ void loop() {
           ontime = ctl*125;
           sprintf(printline, "ontime: %i", ontime);
           break;
-          
+
           case 'f':
           offtime = ctl*200;
           sprintf(printline, "offtime: %i", offtime);
           break;
-          
+
           case 'g':
           gaptime = ctl*1000;
           sprintf(printline, "gaptime: %i", gaptime);
@@ -170,12 +170,12 @@ void loop() {
           break;
           }
         }
-        
+
         ble.println(printline);
         //interpret cmd
       }
-  } 
-    
+  }
+
   }
 
   bool lr[5];
@@ -189,7 +189,7 @@ void loop() {
 
   long unsigned int starttime = millis();
   String pt = "";
-  
+
   while ((millis()-starttime) < gaptime){
     // Poor man's interrupts (not interrupt capable pins)
     tr[0] = digitalRead(A0);
@@ -201,7 +201,7 @@ void loop() {
     if(!tr[0] && lr[0]){
       // Rotate mode
       mode = (mode + 1) % 4;
-      pulseLetter('a'+ mode, 250);    
+      pulseLetter('a'+ mode, 250);
       delay(100);
       starttime = millis();
     }
@@ -273,7 +273,7 @@ void loop() {
           pt = "";
           break;
       }
-      
+
       pulseLetter('i' + phrasen, 250);
       delay(100);
       starttime = millis();
@@ -283,15 +283,15 @@ void loop() {
       mode = 1;
       first == true;
       pulseLetter('z', 250);
-     
+
     }
 
     for (int i=0; i<5; i++){
       // Poor man's shift register
       lr[i] = tr[i];
-    }   
+    }
   }
-  
+
   if (mode != lastcase) {
     // Reset lights (just in case something goes weird)
     setColor(off);
@@ -336,15 +336,15 @@ void loop() {
       Serial.println('?');
       break;
     default:
-      
+
       break;
   }
   lastcase = mode;
-  
+
 //  delay(2000);
 //  pulseLetter(719*millis()%26 + 'a', 500);
   //setColor(blue);
-  
+
 }
 
 bool setColor(cRGB color){
@@ -389,7 +389,7 @@ bool ramp(int index, cRGB s, cRGB e, int dur){
   }
   pixels.set_crgb_at(25-index, e);
   pixels.sync();
-  
+
 }
 
 bool pulsePhrase(char letters[]){
@@ -451,6 +451,5 @@ void setBrightness(double br){
 }
 
 bool setMode(char mode){
-  
-}
 
+}
