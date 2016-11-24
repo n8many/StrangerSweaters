@@ -1,6 +1,27 @@
 # StrangerSweaters
 Stranger Things Light Wall Halloween Costume (In sweater form)
 
+Controls 26 LEDs to light up letters in order
+
+##Usage:
+
+* Connect BLE device to the [Adafruit Bluefruit LE Connect](https://play.google.com/store/apps/details?id=com.adafruit.bluefruit.le.connect&hl=en).
+
+* To send new phrase send "!phrase"
+
+* To send a command send "/(n/f/g/m) [0-9]" where:
+
+  * n controls o**n**-time (in multiples of 125ms)
+
+  * f controls of**f**-time (in multiples of 200ms)
+
+  * g controls **g** ap-time (in multiples of 1000ms)
+
+  * m controls the **m** ode (1-4)
+
+
+
+
 ##Hardware:
 
 * [Adafruit Feather 32u4 Bluefruit](https://www.adafruit.com/products/2829)
