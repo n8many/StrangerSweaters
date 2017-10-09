@@ -1,5 +1,5 @@
-#include <SPI.h>
 #include <WS2812.h>
+#include <SPI.h>
 //#include <FastLED.h>
 #include "Adafruit_BLE.h"
 #include "Adafruit_BluefruitLE_SPI.h"
@@ -9,7 +9,8 @@
 #define MINIMUM_FIRMWARE_VERSION    "0.6.6"
     #define MODE_LED_BEHAVIOUR          "MODE"
 #define NUM_LEDS 26
-#define PIN 12
+#define PIN 3
+#define CHIPEN 11
 
 int ontime = 250;
 int offtime = 400;
@@ -37,6 +38,11 @@ cRGB red;
 cRGB off;
 cRGB colors[NUM_LEDS];
 
+#define UP A3
+#define DOWN A4
+#define CENTER A2
+#define LEFT A0
+#define RIGHT A1
 
 
 
@@ -50,11 +56,12 @@ void setup() {
   ble.verbose(false);
   // buttons
 
-  pinMode(A0, INPUT_PULLUP);
-  pinMode(A1, INPUT_PULLUP);
-  pinMode(A2, INPUT_PULLUP);
-  pinMode(A3, INPUT_PULLUP);
-  pinMode(A4, INPUT_PULLUP);
+  pinMode(RIGHT, INPUT_PULLUP);
+  pinMode(UP, INPUT_PULLUP);
+  pinMode(DOWN, INPUT_PULLUP);
+  pinMode(CENTER, INPUT_PULLUP);
+  pinMode(LEFT, INPUT_PULLUP);
+  pinMode(13, OUTPUT);
 
 
   if ( ble.isVersionAtLeast(MINIMUM_FIRMWARE_VERSION) )
@@ -65,16 +72,14 @@ void setup() {
   }
   ble.setMode(BLUEFRUIT_MODE_DATA);
   setBrightness(0.25);
-  //Serial1.attachRts(3);
-  pinMode(13, OUTPUT);
-  setColor(off);
+  pinMode(CHIPEN, OUTPUT);
+  digitalWrite(CHIPEN, LOW);
   delay(1000);
-  digitalWrite(13, HIGH);
-  pixels.setOutput(12);
+  pixels.setOutput(PIN);
   pixels.setColorOrderRGB();
-  digitalWrite(13, LOW);
+  setColor(off);
+
   Serial.println("Three");
-  digitalWrite(13, HIGH);
   char bootstring[NUM_LEDS];
   bootup.toCharArray(bootstring, 27);
   for (int i=0; i<NUM_LEDS; i++){
@@ -82,8 +87,6 @@ void setup() {
   }
   delay(ontime);
   setColor(off);
-  digitalWrite(13, LOW);
-
   //Serial.println("test");
 
 }
@@ -162,7 +165,7 @@ void loop() {
 
           case 'm':
           ctl=ctl-1;
-          mode = ctl%4
+          mode = ctl%4;
           sprintf(printline, "mode: %i", ctl);
           break;
           default:
@@ -181,22 +184,22 @@ void loop() {
   bool lr[5];
   bool tr[5];
 
-  lr[0] = digitalRead(A0);
-  lr[1] = digitalRead(A1);
-  lr[2] = digitalRead(A2);
-  lr[3] = digitalRead(A3);
-  lr[4] = digitalRead(A4);
+  lr[0] = true;
+  lr[1] = true;
+  lr[2] = true;
+  lr[3] = true;
+  lr[4] = true;
 
   long unsigned int starttime = millis();
   String pt = "";
-
+  digitalWrite(13, HIGH);
   while ((millis()-starttime) < gaptime){
     // Poor man's interrupts (not interrupt capable pins)
-    tr[0] = digitalRead(A0);
-    tr[1] = digitalRead(A1);
-    tr[2] = digitalRead(A2);
-    tr[3] = digitalRead(A3);
-    tr[4] = digitalRead(A4);
+    tr[0] = digitalRead(CENTER); // Mode Swicth
+    tr[1] = digitalRead(UP); // Repeat
+    tr[2] = digitalRead(DOWN); // ON/OFF
+    tr[3] = digitalRead(RIGHT); // Phrase Select
+    tr[4] = digitalRead(LEFT); // Reset
 
     if(!tr[0] && lr[0]){
       // Rotate mode
@@ -248,7 +251,7 @@ void loop() {
           break;
         case 4:
         //m
-          pt = "r u n";
+          pt = "r u n ";
 
           break;
         case 5:
@@ -291,6 +294,7 @@ void loop() {
       lr[i] = tr[i];
     }
   }
+  digitalWrite(13, LOW);
 
   if (mode != lastcase) {
     // Reset lights (just in case something goes weird)

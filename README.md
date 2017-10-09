@@ -19,6 +19,8 @@ Controls 26 LEDs to light up letters in order
 
   * m controls the **m**ode (1-4)
 
+* Use buttons to cycle through modes, pre-select phrases, reset settings, and turn off the device
+
 
 
 
