@@ -1,7 +1,7 @@
 # StrangerSweaters
 Stranger Things Light Wall Halloween Costume (In sweater form)
 
-Controls 26 LEDs to light up letters in order
+Controls 26 LEDs to light up letters in order, sound effects are also played to match the lighting of the letters.
 
 ##Usage:
 
@@ -19,6 +19,8 @@ Controls 26 LEDs to light up letters in order
 
   * m controls the **m**ode (1-4)
 
+  * s contols the **s**ound (0 is off, 1 is on)
+
 * Use buttons to cycle through modes, pre-select phrases, reset settings, and turn off the device
 
 
@@ -31,8 +33,13 @@ Controls 26 LEDs to light up letters in order
 * [26x RGB Addressable, PTH LEDs](https://www.sparkfun.com/products/12877)
 
 * [Logic Level Converter](https://www.sparkfun.com/products/12009)
+    * [Alternatively use HCT74XXX]()
 
+* [Music Maker Featherwing](https://www.adafruit.com/product/3436)
 
+* [2x Small Speakers]()
+
+* [10k Potentiometer]()
 ##Libraries:
 
 * [WS2812 Library for 8bit](https://github.com/cpldcpu/light_ws2812)
@@ -46,6 +53,6 @@ Controls 26 LEDs to light up letters in order
 
 * Power for LEDS is drawn directly from USB
 
-* LED signal pin is 12 (connected through Logic Level Converter)
+* LED signal pin is 3 (connected through Logic Level Converter or Buffer)
 
 * LEDs are connected in reverse alphabetical order (where Z is connected first to the Arduino)
