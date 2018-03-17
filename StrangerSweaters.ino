@@ -74,11 +74,10 @@ Adafruit_VS1053_FilePlayer soundBoard =
   Adafruit_VS1053_FilePlayer(VS1053_RESET, VS1053_CS, VS1053_DCS, VS1053_DREQ, CARDCS);
 
 void setup() {
-    // put your setup code here, to run once
   Serial.begin( 9600 );
   ble.begin(VERBOSE_MODE);
 
-  // buttons
+  // Buttons
   pinMode(RIGHT, INPUT_PULLUP);
   pinMode(UP, INPUT_PULLUP);
   pinMode(DOWN, INPUT_PULLUP);
@@ -114,7 +113,6 @@ void setup() {
 
   Serial.println(F("VS1053 found"));
   soundBoard.reset();
-  //soundBoard.sineTest(0x44, 500);    // Make a tone to indicate VS1053 is working
   soundBoard.useInterrupt(VS1053_FILEPLAYER_TIMER0_INT); // timer int
   soundBoard.setVolume(10,10);
 
