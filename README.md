@@ -3,23 +3,33 @@ Stranger Things Light Wall Halloween Costume (In sweater form)
 
 Controls 26 LEDs to light up letters in order, sound effects are also played to match the lighting of the letters.
 
+Has now been mounted on the wall, and been turned into an IoT device.
+
+See branch 32u4-ble for a bluetooth only version.
+
 ##Usage:
 
-* Connect BLE device to the [Adafruit Bluefruit LE Connect](https://play.google.com/store/apps/details?id=com.adafruit.bluefruit.le.connect&hl=en).
+* Connect to ESP32 via WiFi
 
-* To send new phrase send "!phrase"
+  * To change the phrase go to "/phrase.cgi"
 
-* To send a command send "/(n/f/g/m) [0-9]" where:
+  * To change advanced options (timing, etc) go to "advanced.cgi"
 
-  * n controls o**n**-time (in multiples of 125ms)
+* Connect BLE device to your phone (Not sure what app to use now).
 
-  * f controls of**f**-time (in multiples of 200ms)
+  * To send new phrase send "!phrase"
 
-  * g controls **g**ap-time (in multiples of 1000ms)
+  * To send a command send "/(n/f/g/m) [0-9]" where:
 
-  * m controls the **m**ode (1-4)
+    * n controls o**n**-time (in multiples of 125ms)
 
-  * s contols the **s**ound (0 is off, 1 is on)
+    * f controls of**f**-time (in multiples of 200ms)
+
+    * g controls **g**ap-time (in multiples of 1000ms)
+
+    * m controls the **m**ode (1-4)
+
+    * s contols the **s**ound (0 is off, 1 is on)
 
 * Use buttons to cycle through modes, pre-select phrases, reset settings, and turn off the device
 
@@ -28,31 +38,48 @@ Controls 26 LEDs to light up letters in order, sound effects are also played to 
 
 ##Hardware:
 
-* [Adafruit Feather 32u4 Bluefruit](https://www.adafruit.com/products/2829)
+* [Adafruit Feather ESP32](https://www.adafruit.com/product/3405)
 
 * [26x RGB Addressable, PTH LEDs](https://www.sparkfun.com/products/12877)
 
 * [Logic Level Converter](https://www.sparkfun.com/products/12009)
-    * [Alternatively use HCT74XXX]()
+    * Alternatively use [MC74HCT245](https://www.arrow.com/en/products/mc74hct245ang/on-semiconductor)
 
 * [Music Maker Featherwing](https://www.adafruit.com/product/3436)
 
-* [2x Small Speakers]()
+* [2x Small Speakers](https://www.arrow.com/en/products/cds-25148/cui-inc)
 
-* [10k Potentiometer]()
+* [10k Potentiometer](https://www.arrow.com/en/products/rk09k1130ap5/alps-electric)
 ##Libraries:
 
-* [WS2812 Library for 8bit](https://github.com/cpldcpu/light_ws2812)
+* [FastLED (samguyer's fork for now)](https://github.com/samguyer/FastLED)
 
-* [Adafruit BLE Library] (https://github.com/adafruit/Adafruit_BluefruitLE_nRF51)
+* [WebServer_tng] (https://github.com/bbx10/WebServer_tng)
 
+* [Adafruit VS1053] (https://github.com/adafruit/Adafruit_VS1053_Library)
+
+* Be Sure to include ConnectionInfo.h which looks something like:
+```
+    const char *ssid = "wifi_name";
+    const char *password = "hunter2";
+```
 
 ##Pin Assignments:
 
-* Buttons are connected to A0-A4 and short the signal to ground when pressed (uses internal pullup resistors otherwise)
+* Buttons are connected to A0-A4 and short the signal to ground when pressed (ESP32 needs external pullup resistors for some buttons)
 
 * Power for LEDS is drawn directly from USB
 
-* LED signal pin is 3 (connected through Logic Level Converter or Buffer)
+* LED signal pin is 12 (connected through Logic Level Converter or Buffer)
 
 * LEDs are connected in reverse alphabetical order (where Z is connected first to the Arduino)
+
+##Current Notes:
+
+* Sound does not work currently, something to do with the SD card.
+
+* The sketch fills 98% of the memory on the ESP32, so some optimization is being worked on.
+
+* mDNS does not work due to lack of space.
+
+* Bluetooth Serial is untested but should work.
