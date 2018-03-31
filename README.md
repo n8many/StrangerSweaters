@@ -54,9 +54,9 @@ See branch 32u4-ble for a bluetooth only version.
 
 * [FastLED (samguyer's fork for now)](https://github.com/samguyer/FastLED)
 
-* [WebServer_tng] (https://github.com/bbx10/WebServer_tng)
+* [WebServer_tng](https://github.com/bbx10/WebServer_tng)
 
-* [Adafruit VS1053] (https://github.com/adafruit/Adafruit_VS1053_Library)
+* [Adafruit VS1053](https://github.com/adafruit/Adafruit_VS1053_Library)
 
 * Be Sure to include ConnectionInfo.h which looks something like:
 ```
