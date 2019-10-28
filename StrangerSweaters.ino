@@ -10,7 +10,7 @@
 #include <WiFi.h>
 #include <WiFiClient.h>
 #include <WebServer.h>
-//#include <ESPmDNS.h>
+#include <ESPmDNS.h>
 #include "ConnectionInfo.h"
 
 //#define CONFIG_MAIN_TASK_STACK_SIZE 10000
@@ -38,7 +38,7 @@ const int pagebufferlen = 4096;
 
 //LED Settings
 #define NUM_LEDS 26
-#define PIN  12
+#define PIN  12 
 #define CHIPEN 27 //For enable pin on 5V buffer
 CRGB yellow;
 CRGB blue;
@@ -84,12 +84,11 @@ Adafruit_VS1053_FilePlayer soundBoard =
 TaskHandle_t sweaterTask_h;
 TaskHandle_t serverTask_h;
 
-void setup() {
+void setup() {  
   Serial.begin( 115200 );
   WiFi.begin ( ssid, password );
-  //MDNS.begin ( "strangersweaters" );
-  server.on ( "/", handleRoot );
-  server.on ( "/phrase.cgi", phraseInput );
+  MDNS.begin ( "strangersweaters" );
+  server.on ( "/", phraseInput );
   server.on ( "/advanced.cgi", advancedInput );
   server.begin();
 
@@ -100,7 +99,7 @@ void setup() {
     ct += 1;
     if (ct > 6) break;
   }
-
+  
   if (ct < 7){
     Serial.println ( "" );
     Serial.print ( "Connected to " );
@@ -111,7 +110,7 @@ void setup() {
     Serial.println ("No Wifi");
   }
   ble.begin("Will Byer's iPhone");
-
+  
   // Buttons
   pinMode(RIGHT, INPUT_PULLUP);
   pinMode(UP, INPUT_PULLUP);
@@ -121,10 +120,10 @@ void setup() {
   pinMode(VKNOB, INPUT);
   pinMode(13, OUTPUT);
 
-  setBrightness(0.25);
+  setBrightness(1);
   pinMode(CHIPEN, OUTPUT);
   digitalWrite(CHIPEN, LOW);
-  FastLED.addLeds<WS2812B, PIN, RGB>(pixels, NUM_LEDS);
+  FastLED.addLeds<WS2812B, PIN, RGB>(pixels, NUM_LEDS).setCorrection(TypicalLEDStrip);
   delay(1000);
   setColor(off);
   char bootstring[NUM_LEDS];
@@ -132,8 +131,11 @@ void setup() {
   for (int i=0; i<NUM_LEDS; i++){
     lightLetter(bootstring[i], 125);
   }
+  Serial.println();
   delay(ontime);
   setColor(off);
+
+
   if (!soundBoard.begin()) { // initialise the music player
      Serial.println(F("Couldn't find VS1053"));
      soundenabled = false;
@@ -143,29 +145,31 @@ void setup() {
     soundBoard.useInterrupt(VS1053_FILEPLAYER_TIMER0_INT); // timer int
     soundBoard.setVolume(10,10);
   }
-
-  if (!SD.begin(CARDCS)) {
-    Serial.println(F("SD failed, or not present"));
-    soundenabled = false;
-    pulseLetter('n', 250);
-  } else {
-    digitalWrite(13,LOW);
-    Serial.println("SD OK!");
-    if(SD.exists("Light000.mp3")){
-      digitalWrite(13, HIGH);
-      soundenabled = true;
-      pulseLetter('y', 250);
-    } else {
-      digitalWrite(13, HIGH);
+  if(true){    
+    if (!SD.begin(CARDCS)) {
+      Serial.println(F("SD failed, or not present"));
       soundenabled = false;
-      pulseLetter('m', 250);
+      pulseLetter('n', 250);
+    } else {
+      digitalWrite(13,LOW);
+      Serial.println("SD OK!");
+      if(SD.exists("Light000.mp3")){
+        digitalWrite(13, HIGH);
+        soundenabled = true;
+        pulseLetter('y', 250);
+      } else {
+        digitalWrite(13, HIGH);
+        soundenabled = false;
+        pulseLetter('m', 250);
+      }
     }
   }
-
+  
+  
   Serial.println();
   digitalWrite(13, LOW);
   randomSeed(analogRead(VKNOB));
-
+  
   xTaskCreatePinnedToCore(
                     sweaterTask,          /* Task function. */
                     "sweaterTask",        /* String with name of task. */
@@ -174,7 +178,7 @@ void setup() {
                     1,                /* Priority of the task. */
                     &sweaterTask_h,
                     1);            /* Task handle. */
-
+ 
   xTaskCreatePinnedToCore(
                     serverTask,          /* Task function. */
                     "serverTask",        /* String with name of task. */
@@ -190,7 +194,7 @@ void loop() {
   vTaskDelay(10);
 }
 
-/* ---------------------------- Sweater Control Code ---------------------------- */
+/* ---------------------------- Sweater Control Code ---------------------------- */ 
 
 void sweaterTask(void* param){
   while(1){
@@ -212,6 +216,9 @@ void sweaterTask(void* param){
             md = true;
           } else if (c=='!') {
             say  = true;
+            for (int i=0; i<80; i++){
+              phrase[i] = 0;
+            }
             if (!(mode == 1) && !(mode == 2)){
               mode = 1;
             }
@@ -251,26 +258,26 @@ void sweaterTask(void* param){
           ontime = ctl*125;
           sprintf(printline, "ontime: %i", ontime);
           break;
-
+  
           case 'f':
           // Time LED is off in ms
           offtime = ctl*200;
           sprintf(printline, "offtime: %i", offtime);
           break;
-
+  
           case 'g':
           // Time between cycle repeats
           gaptime = ctl*1000;
           sprintf(printline, "gaptime: %i", gaptime);
           break;
-
+  
           case 'm':
           // Mode Selection
           ctl=ctl-1;
           mode = ctl%5;
           sprintf(printline, "mode: %i", mode);
           break;
-
+  
           case 's':
           // Sound Control
           ctl=ctl-1;
@@ -281,7 +288,7 @@ void sweaterTask(void* param){
           }
           sprintf(printline, "sound: %i", soundenabled);
           break;
-
+  
           default:
           sprintf(printline, "ERROR");
           break;
@@ -290,17 +297,17 @@ void sweaterTask(void* param){
         ble.println(printline);
       }
     }
-
-
+    
+  
     bool lr[5];
     bool tr[5];
-
+  
     lr[0] = true;
     lr[1] = true;
     lr[2] = true;
     lr[3] = true;
     lr[4] = true;
-
+  
     long unsigned int starttime = millis();
     String pt = "";
     digitalWrite(13, HIGH);
@@ -312,7 +319,7 @@ void sweaterTask(void* param){
       tr[2] = digitalRead(DOWN); // ON/fOFF
       tr[3] = digitalRead(RIGHT); // Phrase Select
       tr[4] = digitalRead(LEFT); // Sound Control
-
+  
       if(!tr[0] && lr[0]){
         // Rotate mode
         mode = (mode + 1) % 5;
@@ -387,7 +394,7 @@ void sweaterTask(void* param){
             pt = "";
             break;
         }
-
+  
         pulseLetter('i' + phrasen, 250);
         delay(100);
         starttime = millis();
@@ -398,7 +405,7 @@ void sweaterTask(void* param){
         pulseLetter('y'+ soundenabled, 250);
         delay(100);
         starttime = millis();
-
+  
       }
       if (firstbutton && !(tr[1] && tr[2] && tr[3] && tr[4] && tr[5])){
         firstbutton = false;
@@ -409,23 +416,26 @@ void sweaterTask(void* param){
         lr[i] = tr[i];
       }
     }
-
+    
     digitalWrite(13, LOW);
     if (mode != lastcase) {
       // Reset lights (just in case something goes weird)
       setColor(off);
     }
-
+  
     delay(100);
     // Input new phrase if phrase is selected by button menu
     if (pt.length()>0){
+      for (int i=0; i<80; i++){
+        phrase[i] = 0;
+      }
       phrasesize = pt.length();
       for (int i = 0; i < phrasesize; i++) {
         phrase[i] = pt[i];
       }
       first = true;
     }
-
+  
     switch (mode) {
       case 0:
         //Off
@@ -454,16 +464,16 @@ void sweaterTask(void* param){
           int dir = random(2);
           int startc = dir*8;
           int endc = (1-dir)*8;
-
+  
           if (startr == 0 && dir == 1){
             startc = 7;
           } else if (endr == 0 && dir == 0){
             endc = 7;
           }
-
+  
           int curc = startc;
           int curr = startr;
-
+  
           while (!((curc==endc) && (curr==endr))){
             lightLetter(grid[curr][curc], ontime+offtime);
             if (curc > endc) {
@@ -481,7 +491,7 @@ void sweaterTask(void* param){
               }
             }
           }
-
+  
           lightLetter(grid[curr][curc], ontime);
           delay(offtime);
           setColor(off);
@@ -489,7 +499,7 @@ void sweaterTask(void* param){
           break;
         }
       default:
-
+  
         break;
     }
     lastcase = mode;
@@ -516,12 +526,8 @@ bool pulseLetter(char letter, int duration) {
     }
     Serial.print(letter);
     ramp(index, off, colors[index], duration/4);
-    pixels[25-index] = colors[index];
-    FastLED.show();
     delay(duration/2);
     ramp(index, colors[index], off, duration/4);
-    pixels[25-index] = off;
-    FastLED.show();
     return true;
   } else {
     delay(duration);
@@ -529,7 +535,7 @@ bool pulseLetter(char letter, int duration) {
   }
 }
 
-bool ramp(int index, CRGB s, CRGB e, int dur){
+bool ramp(int index, const CRGB s, const CRGB e, int dur){
   // Controls rate at which led turns on/off
   pixels[25-index] = s;
   FastLED.show();
@@ -537,10 +543,8 @@ bool ramp(int index, CRGB s, CRGB e, int dur){
   int t_init = millis();
   int t = millis();
   while ((t-t_init) < dur){
-    res.r = (byte)(s.r*(1-(t-t_init)*1.0/dur) + e.r*(t-t_init)*1.0/dur);
-    res.g = (byte)(s.g*(1-(t-t_init)*1.0/dur) + e.g*(t-t_init)*1.0/dur);
-    res.b = (byte)(s.b*(1-(t-t_init)*1.0/dur) + e.b*(t-t_init)*1.0/dur);
-    pixels[25-index] = res;
+    uint8_t prog = 255*(t-t_init)/dur;
+    pixels[25-index] = s.lerp8(e, prog);
     FastLED.show();
     delay(5);
     t = millis();
@@ -570,9 +574,7 @@ bool lightLetter(char letter, int duration) {
     }
     Serial.print(letter);
     ramp(index, off, colors[index], duration/2);
-    pixels[25-index] = colors[index];
-    FastLED.show();
-    delay(duration*3/4);
+    delay(duration/2);
     return true;
   } else {
     delay(duration);
@@ -635,53 +637,6 @@ void serverTask(void* param){
   vTaskDelete( NULL );
 }
 
-void handleRoot(){
-  char temp[pagebufferlen];
-  int l = snprintf ( temp, pagebufferlen,
-"<html>\
-  <body>\
-    sup\
-  </body>\
-</html>"
-  );
-  server.send ( 200, "text/html", temp );
-}
-
-void phraseInput() {
-  char temp[pagebufferlen];
-  int sec = millis() / 1000;
-  int min = sec / 60;
-  int hr = min / 60;
-  if (server.method() == HTTP_POST){
-    for ( uint8_t i = 0; i < server.args(); i++ ) {
-      if(server.argName(i) == "phrase"){
-        server.arg(i).toCharArray(phrase, 80);
-        Serial.println(server.arg(i));
-        first = true;
-        if (!(mode == 1) && !(mode == 2)){
-          mode = 1;
-        }
-      }
-    }
-  }
-
-  int l = snprintf ( temp, pagebufferlen,
-"<html>\
-  <body>\
-    <form name=\"myform\" action=\"/phrase.cgi\" method=\"POST\">\
-      <div align=\"left\">\
-      <br><br>\
-      <input name =\"phrase\" type=\"text\" size=\"25\" value=\"%s\">\
-      <br><input type=\"submit\" value=\"Submit phrase\"><br>\
-      </div>\
-    </form>\
-  </body>\
-</html>",
-  phrase);
-  Serial.println(phrase);
-  server.send ( 200, "text/html", temp );
-}
-
 void advancedInput(){
   String message;
   String drop1;
@@ -702,10 +657,10 @@ void advancedInput(){
       } else if (server.argName(i) == "mode"){
         mode = server.arg(i).toInt();
       }
-    }
+    }  
   }
 
-  sprintf(tmp,
+  sprintf(tmp,  
 "<html>\n\
   <body>\n\
     <form name=\"myform\" action=\"advanced.cgi\" method=\"POST\">\n\
@@ -737,40 +692,92 @@ void advancedInput(){
     message += String(tmp);
   }
   message += "      </select>\n";
-
+  
   drop1 = "      <select name=\"ontime\">\n";
   drop2 = "      <select name=\"offtime\">\n";
   drop3 = "      <select name=\"gaptime\">\n";
   char option[400] = "        <option value=%d%s%d</option>\n";
-
+  
   for (int i=0; i<10; i++){
     int val1 = (i+1)*125;
-    char tmp1[400];
+    char tmp1[400]; 
     char* sel1 = (val1 == ontime)? selected : deselected;
     sprintf(tmp1, option, val1, sel1, val1);
     drop1 += String(tmp1);
-
+  
     int val2 = (i+1)*200;
     char tmp2[400];
     char* sel2 = (val2 == offtime)? selected : deselected;
     sprintf(tmp2, option, val2, sel2, val2);
     drop2 += String(tmp2);
-
+     
     int val3 = (i+1)*1000;
     char tmp3[400];
     char* sel3 = (val3 == gaptime)? selected : deselected;
     sprintf(tmp3, option, val3, sel3, val3);
     drop3 += String(tmp3);
   }
-
+  
   drop1 += "      </select>\n";
   drop2 += "      </select>\n";
   drop3 += "      </select>\n";
   message += drop1 + drop2 + drop3;
-
+  
   message += "      <br><input type=\"submit\" value=\"Select Options\"><br>\n\
     </form>\n";
   message += "  </body>\n</html>";
 
-  server.send ( 200, "text/html", message );
+  Serial.println(message.length());
+  
+  server.send ( 200, "text/html", message ); 
+  Serial.println("I did it");
+}
+void handleRoot(){
+  char temp[pagebufferlen];
+  int l = snprintf ( temp, pagebufferlen,
+"<html>\
+  <body>\
+    sup\
+  </body>\
+</html>"
+  );
+  server.send ( 200, "text/html", temp ); 
+}
+
+void phraseInput() {
+  char temp[pagebufferlen];
+  int sec = millis() / 1000;  
+  int min = sec / 60;
+  int hr = min / 60;
+  if (server.method() == HTTP_POST){
+    for ( uint8_t i = 0; i < server.args(); i++ ) {
+      if(server.argName(i) == "phrase"){
+        for (int i=0; i<80; i++){
+          phrase[i] = 0;
+        }
+        server.arg(i).toCharArray(phrase, 80);
+        Serial.println(server.arg(i));
+        first = true;
+        if (!(mode == 1) && !(mode == 2)){
+          mode = 1;
+        }
+      }
+    }  
+  }
+  
+  int l = snprintf ( temp, pagebufferlen,
+"<html>\
+  <body>\
+    <form name=\"myform\" action=\"/\" method=\"POST\">\
+      <div align=\"left\">\
+      <br><br>\
+      <input name =\"phrase\" type=\"text\" size=\"25\" value=\"%s\">\
+      <br><input type=\"submit\" value=\"Submit phrase\"><br>\
+      </div>\
+    </form>\
+  </body>\
+</html>",
+  phrase);
+  Serial.println(phrase);
+  server.send ( 200, "text/html", temp );  
 }

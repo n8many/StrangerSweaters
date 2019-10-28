@@ -13,7 +13,7 @@ See branch 32u4-ble for a bluetooth only version.
 
   * To change the phrase go to "/phrase.cgi"
 
-  * To change advanced options (timing, etc) go to "advanced.cgi"
+  * To change advanced options (timing, etc) go to "/advanced.cgi"
 
 * Connect BLE device to your phone (Not sure what app to use now).
 
@@ -58,7 +58,7 @@ See branch 32u4-ble for a bluetooth only version.
 
 * [Adafruit VS1053](https://github.com/adafruit/Adafruit_VS1053_Library)
 
-* Be Sure to include ConnectionInfo.h which looks something like:
+* Be sure to include ConnectionInfo.h which looks something like:
 ```
     const char *ssid = "wifi_name";
     const char *password = "hunter2";
